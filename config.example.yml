@@ -1,0 +1,23 @@
+# Site monitoring configuration
+# Copy this file to config.yml and update with your settings
+
+email:
+  from: "monitor@example.com"
+  to: "admin@example.com"
+  smtp_server: "smtp.gmail.com"
+  smtp_port: 587
+  username: "your-email@gmail.com"
+  password: "your-app-password"  # For Gmail, use an app password
+
+sites:
+  - name: "Example Site"
+    url: "https://www.example.com"
+    expected_string: "Example Domain"
+
+  - name: "GitHub"
+    url: "https://github.com"
+    expected_string: "GitHub"
+
+  - name: "Google"
+    url: "https://www.google.com"
+    expected_string: "Google"

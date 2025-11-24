@@ -1,6 +1,5 @@
 # Ignore config files with sensitive data
 config.yml
-config.*.yml
 
 # Script-generated files
 .last_run.txt
