@@ -1,0 +1,41 @@
+# Ignore config files with sensitive data
+config.yml
+config.*.yml
+
+# Script-generated files
+.last_run.txt
+
+# Backup files
+*.bak
+*~
+
+# Log files
+*.log
+
+# Claude Code
+.claude/
+
+# Ruby
+*.gem
+*.rbc
+.bundle
+vendor/bundle/
+Gemfile.lock
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.settings/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
