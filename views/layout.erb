@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>System Status</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background-color: #f7f8fa;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    header {
+      background-color: #fff;
+      border-bottom: 1px solid #e1e4e8;
+      padding: 20px 0;
+      margin-bottom: 30px;
+    }
+
+    header .container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 600;
+      color: #24292e;
+    }
+
+    nav a {
+      color: #586069;
+      text-decoration: none;
+      margin-left: 20px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    nav a:hover {
+      color: #0366d6;
+    }
+
+    .overall-status {
+      background-color: #fff;
+      border-radius: 6px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      border-left: 4px solid;
+    }
+
+    .overall-status.status-operational {
+      border-left-color: #28a745;
+    }
+
+    .overall-status.status-degraded {
+      border-left-color: #ffa500;
+    }
+
+    .overall-status.status-critical {
+      border-left-color: #dc3545;
+    }
+
+    .overall-status.status-unknown {
+      border-left-color: #6c757d;
+    }
+
+    .overall-status h2 {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .overall-status.status-operational h2 {
+      color: #28a745;
+    }
+
+    .overall-status.status-degraded h2 {
+      color: #ffa500;
+    }
+
+    .overall-status.status-critical h2 {
+      color: #dc3545;
+    }
+
+    .overall-status p {
+      color: #586069;
+      font-size: 14px;
+    }
+
+    .site-list {
+      background-color: #fff;
+      border-radius: 6px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      overflow: hidden;
+    }
+
+    .site-item {
+      border-bottom: 1px solid #e1e4e8;
+      padding: 20px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background-color 0.2s;
+    }
+
+    .site-item:last-child {
+      border-bottom: none;
+    }
+
+    .site-item:hover {
+      background-color: #f6f8fa;
+    }
+
+    .site-info h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 5px;
+      color: #24292e;
+    }
+
+    .site-info h3 a {
+      color: #24292e;
+      text-decoration: none;
+    }
+
+    .site-info h3 a:hover {
+      color: #0366d6;
+    }
+
+    .site-info .url {
+      font-size: 13px;
+      color: #586069;
+    }
+
+    .site-stats {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+    }
+
+    .stat {
+      text-align: right;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: #6c757d;
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      margin-bottom: 3px;
+    }
+
+    .stat-value {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .stat-value.uptime-excellent {
+      color: #28a745;
+    }
+
+    .stat-value.uptime-good {
+      color: #5cb85c;
+    }
+
+    .stat-value.uptime-degraded {
+      color: #ffa500;
+    }
+
+    .stat-value.uptime-poor {
+      color: #dc3545;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .status-badge.status-up {
+      background-color: #d4edda;
+      color: #155724;
+    }
+
+    .status-badge.status-down {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+
+    .response-time {
+      font-size: 13px;
+      color: #586069;
+    }
+
+    .incident-list {
+      background-color: #fff;
+      border-radius: 6px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      margin-bottom: 30px;
+    }
+
+    .incident-item {
+      border-bottom: 1px solid #e1e4e8;
+      padding: 20px 30px;
+    }
+
+    .incident-item:last-child {
+      border-bottom: none;
+    }
+
+    .incident-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 10px;
+    }
+
+    .incident-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #24292e;
+    }
+
+    .incident-status {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 3px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .incident-status.active {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+
+    .incident-status.resolved {
+      background-color: #d4edda;
+      color: #155724;
+    }
+
+    .incident-details {
+      font-size: 13px;
+      color: #586069;
+      margin-top: 8px;
+    }
+
+    .incident-time {
+      font-size: 12px;
+      color: #6c757d;
+      margin-top: 5px;
+    }
+
+    .uptime-bar {
+      display: flex;
+      gap: 2px;
+      margin-top: 10px;
+      height: 40px;
+    }
+
+    .uptime-day {
+      flex: 1;
+      background-color: #28a745;
+      border-radius: 2px;
+      position: relative;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .uptime-day:hover {
+      transform: scaleY(1.1);
+    }
+
+    .uptime-day.uptime-excellent {
+      background-color: #28a745;
+    }
+
+    .uptime-day.uptime-good {
+      background-color: #5cb85c;
+    }
+
+    .uptime-day.uptime-degraded {
+      background-color: #ffa500;
+    }
+
+    .uptime-day.uptime-poor {
+      background-color: #dc3545;
+    }
+
+    .uptime-day.no-data {
+      background-color: #e1e4e8;
+    }
+
+    .uptime-bar-container {
+      display: flex;
+      gap: 1px;
+      margin-top: 20px;
+      height: 50px;
+      background-color: #f7f8fa;
+      border-radius: 4px;
+      padding: 5px;
+    }
+
+    .uptime-bar-item {
+      flex: 1;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      min-width: 2px;
+    }
+
+    .uptime-bar-item:hover {
+      transform: scaleY(1.05);
+      opacity: 0.8;
+      z-index: 10;
+    }
+
+    .bar-success {
+      background-color: #28a745;
+    }
+
+    .bar-error {
+      background-color: #dc3545;
+    }
+
+    .bar-no-data {
+      background-color: #e1e4e8;
+    }
+
+    .uptime-bar-legend {
+      display: flex;
+      gap: 20px;
+      margin-top: 15px;
+      font-size: 13px;
+      justify-content: center;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #586069;
+    }
+
+    .legend-color {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border-radius: 3px;
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+
+    .uptime-legend {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #6c757d;
+      margin-top: 10px;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 15px;
+      color: #24292e;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .metric-card {
+      background-color: #fff;
+      border-radius: 6px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .metric-card .metric-label {
+      font-size: 12px;
+      color: #6c757d;
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .metric-card .metric-value {
+      font-size: 28px;
+      font-weight: 600;
+      color: #24292e;
+    }
+
+    footer {
+      text-align: center;
+      padding: 40px 0 20px;
+      color: #6c757d;
+      font-size: 13px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #6c757d;
+    }
+
+    .empty-state h3 {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+
+    @media (max-width: 768px) {
+      .site-item {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .site-stats {
+        margin-top: 15px;
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .metrics-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>System Status</h1>
+      <nav>
+        <a href="/">Home</a>
+        <a href="/incidents">Incidents</a>
+        <a href="/api/status">API</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <%= yield %>
+  </main>
+
+  <footer>
+    <p>Powered by Site Checker &middot; Last updated: <%= Time.now.strftime('%Y-%m-%d %H:%M:%S %Z') %></p>
+  </footer>
+
+  <script>
+    // Auto-refresh every 60 seconds
+    setTimeout(() => {
+      location.reload();
+    }, 60000);
+  </script>
+</body>
+</html>

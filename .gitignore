@@ -3,6 +3,7 @@ config.yml
 
 # Script-generated files
 .last_run.txt
+data/
 
 # Backup files
 *.bak

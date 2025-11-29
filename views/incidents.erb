@@ -1,0 +1,69 @@
+<h2 style="margin-bottom: 20px;">Incident History</h2>
+
+<div style="margin-bottom: 20px;">
+  <a href="/" style="color: #0366d6; text-decoration: none; font-size: 14px;">&larr; Back to status page</a>
+</div>
+
+<% if @active_incidents.any? %>
+  <div class="incident-list">
+    <div style="padding: 20px 30px; border-bottom: 1px solid #e1e4e8;">
+      <h3 class="section-title" style="color: #dc3545;">Active Incidents (<%= @active_incidents.length %>)</h3>
+    </div>
+    <% @active_incidents.each do |incident| %>
+      <div class="incident-item">
+        <div class="incident-header">
+          <div>
+            <div class="incident-title"><%= incident['site_name'] %></div>
+            <div class="incident-details">
+              <strong>ID:</strong> <%= incident['id'] %><br>
+              <%= incident['error'] || 'Service disruption' %>
+            </div>
+            <div class="incident-time">
+              Started: <%= format_timestamp(incident['started_at']) %> (<%= time_ago(incident['started_at']) %>)
+            </div>
+          </div>
+          <span class="incident-status active">Active</span>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% end %>
+
+<div class="incident-list" style="margin-top: 30px;">
+  <div style="padding: 20px 30px; border-bottom: 1px solid #e1e4e8;">
+    <h3 class="section-title">Recent Incidents</h3>
+  </div>
+
+  <% if @recent_incidents.empty? %>
+    <div class="empty-state">
+      <h3>No incidents recorded</h3>
+      <p>All systems have been operational</p>
+    </div>
+  <% else %>
+    <% @recent_incidents.each do |incident| %>
+      <div class="incident-item">
+        <div class="incident-header">
+          <div>
+            <div class="incident-title"><%= incident['site_name'] %></div>
+            <div class="incident-details">
+              <strong>ID:</strong> <%= incident['id'] %><br>
+              <%= incident['error'] || 'Service disruption' %>
+            </div>
+            <div class="incident-time">
+              Started: <%= format_timestamp(incident['started_at']) %> (<%= time_ago(incident['started_at']) %>)
+              <% if incident['resolved_at'] %>
+                <br>Resolved: <%= format_timestamp(incident['resolved_at']) %> (<%= time_ago(incident['resolved_at']) %>)
+                <% if incident['duration'] %>
+                  <br>Duration: <%= format_duration(incident['duration']) %>
+                <% end %>
+              <% end %>
+            </div>
+          </div>
+          <span class="incident-status <%= incident['resolved_at'] ? 'resolved' : 'active' %>">
+            <%= incident['resolved_at'] ? 'Resolved' : 'Active' %>
+          </span>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+</div>

@@ -1,6 +1,6 @@
 # Site Checker
 
-A Ruby script that monitors websites by checking if specific strings are present and sends email notifications when checks fail.
+A Ruby script that monitors websites by checking if specific strings are present and sends email notifications when checks fail. Includes a beautiful status page interface similar to Atlassian Statuspage.
 
 ## Features
 
@@ -8,12 +8,16 @@ A Ruby script that monitors websites by checking if specific strings are present
 - Verify that expected strings are present on each site
 - Handle HTTP redirects automatically
 - Send email notifications when sites fail checks
+- **Track uptime history and response times**
+- **Web-based status page with uptime graphs**
+- **Incident tracking and reporting**
+- **JSON API for programmatic access**
 - Detailed error reporting
 
 ## Requirements
 
 - Ruby 2.5 or higher
-- No external gems required (uses standard library)
+- Bundler for managing dependencies
 
 ## Configuration
 
@@ -50,7 +54,17 @@ Each site entry requires:
 - `url`: Full URL to check (including http:// or https://)
 - `expected_string`: String that must be present in the response
 
+## Installation
+
+Install dependencies:
+
+```bash
+bundle install
+```
+
 ## Usage
+
+### Running Site Checks
 
 Run the script with the default config file:
 
@@ -64,20 +78,60 @@ Or specify a custom config file:
 ruby check_sites.rb path/to/config.yml
 ```
 
+### Status Page
+
+The status page provides a web interface to view uptime history, incidents, and current status of all monitored sites.
+
+Start the status page server:
+
+```bash
+./start_status_page.sh
+```
+
+Or run directly:
+
+```bash
+ruby status_app.rb
+```
+
+The status page will be available at `http://localhost:4567`
+
+#### Status Page Features
+
+- **Dashboard**: Overview of all services with uptime percentages and current status
+- **90-Day Uptime History**: Visual bar chart showing daily uptime for each service
+- **Incident Tracking**: View active and historical incidents
+- **Response Time Monitoring**: Average response times for each service
+- **Site Details**: Click on any service to view detailed metrics and check history
+
+#### API Endpoints
+
+The status page also provides JSON API endpoints:
+
+- `GET /api/status` - Overall system status and all sites
+- `GET /api/site/:name` - Detailed information for a specific site
+
+Example:
+```bash
+curl http://localhost:4567/api/status
+```
+
 ## Output
 
 The script will:
 1. Check each site in sequence
-2. Print the status of each check to the console
-3. Send an email notification if any sites fail
-4. Exit with status 0 (all sites can also exit normally even with failures)
+2. Print the status of each check to the console with response time
+3. Record uptime data to `data/uptime.json`
+4. Track incidents in `data/incidents.json`
+5. Send an email notification if any sites fail
+6. Exit with status 0 (all sites can also exit normally even with failures)
 
 Example output:
 
 ```
 Checking 3 sites...
-Checking Example Site... OK
-Checking GitHub... OK
+Checking Example Site... OK (234ms)
+Checking GitHub... OK (156ms)
 Checking Google... FAILED - String 'Google' not found
 
 1 site(s) failed the check
@@ -109,11 +163,29 @@ The script handles various failure scenarios:
 
 All errors are logged and included in the email notification.
 
+## Data Storage
+
+The uptime tracker stores data in JSON files:
+
+- `data/uptime.json` - Check results and response times for each site
+- `data/incidents.json` - Incident history (start/end times, errors)
+
+Data is retained for 90 days and automatically cleaned up.
+
+## Recommended Workflow
+
+1. Set up your `config.yml` with sites to monitor
+2. Run `./check_sites.rb` manually to test
+3. Set up a cron job to run checks every 5-15 minutes
+4. Start the status page server: `./start_status_page.sh`
+5. Access the status page at `http://localhost:4567`
+
 ## Security Notes
 
 - Store your `config.yml` securely and don't commit passwords to version control
 - Consider using environment variables for sensitive data
 - Use app passwords instead of actual account passwords when possible
+- The status page runs on localhost by default - configure a reverse proxy (nginx/Apache) for public access
 
 ## License
 

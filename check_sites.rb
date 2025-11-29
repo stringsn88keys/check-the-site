@@ -4,12 +4,14 @@ require 'yaml'
 require 'net/http'
 require 'net/smtp'
 require 'uri'
+require_relative 'uptime_tracker'
 
 class SiteChecker
   def initialize(config_file = 'config.yml')
     @config = YAML.load_file(config_file)
     @failures = []
     @results = []
+    @uptime_tracker = UptimeTracker.new
   end
 
   def check_all_sites
@@ -71,54 +73,63 @@ class SiteChecker
     print "Checking #{name}... "
 
     begin
+      start_time = Time.now
       uri = URI.parse(url)
       response = fetch_with_redirects(uri)
+      response_time = ((Time.now - start_time) * 1000).round # in milliseconds
 
       if response.is_a?(Net::HTTPSuccess)
         if response.body.include?(expected_string)
-          puts "OK"
+          puts "OK (#{response_time}ms)"
           @results << {
             name: name,
             status: "OK"
           }
+          @uptime_tracker.record_check_with_timing(name, url, 'up', response_time)
         else
+          error_msg = "Expected string not found in response"
           puts "FAILED - String '#{expected_string}' not found"
           @failures << {
             name: name,
             url: url,
             expected_string: expected_string,
-            reason: "Expected string not found in response"
+            reason: error_msg
           }
           @results << {
             name: name,
             status: "FAILED - String '#{expected_string}' not found"
           }
+          @uptime_tracker.record_check_with_timing(name, url, 'down', response_time, error_msg)
         end
       else
+        error_msg = "HTTP error: #{response.code} #{response.message}"
         puts "FAILED - HTTP #{response.code}"
         @failures << {
           name: name,
           url: url,
           expected_string: expected_string,
-          reason: "HTTP error: #{response.code} #{response.message}"
+          reason: error_msg
         }
         @results << {
           name: name,
           status: "FAILED - HTTP #{response.code}"
         }
+        @uptime_tracker.record_check_with_timing(name, url, 'down', response_time, error_msg)
       end
     rescue StandardError => e
+      error_msg = "Error: #{e.message}"
       puts "FAILED - #{e.message}"
       @failures << {
         name: name,
         url: url,
         expected_string: expected_string,
-        reason: "Error: #{e.message}"
+        reason: error_msg
       }
       @results << {
         name: name,
         status: "FAILED - #{e.message}"
       }
+      @uptime_tracker.record_check(name, url, 'down', error_msg)
     end
   end
 

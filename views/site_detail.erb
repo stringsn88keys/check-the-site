@@ -1,0 +1,133 @@
+<div style="margin-bottom: 20px;">
+  <a href="/" style="color: #0366d6; text-decoration: none; font-size: 14px;">&larr; Back to all services</a>
+</div>
+
+<div class="overall-status <%= status_class(@site_data['status']) %>">
+  <h2><%= @site_name %></h2>
+  <p><%= @site_data['url'] %></p>
+  <div style="margin-top: 15px;">
+    <span class="status-badge status-<%= @site_data['status'] %>">
+      <%= @site_data['status'] == 'up' ? 'Operational' : 'Down' %>
+    </span>
+  </div>
+</div>
+
+<div class="metrics-grid">
+  <div class="metric-card">
+    <div class="metric-label">Current Uptime</div>
+    <div class="metric-value <%= uptime_bar_class(@site_data['uptime_percentage']) %>">
+      <%= @site_data['uptime_percentage'] %>%
+    </div>
+  </div>
+
+  <% if @site_data['avg_response_time'] %>
+    <div class="metric-card">
+      <div class="metric-label">Avg Response Time</div>
+      <div class="metric-value">
+        <%= @site_data['avg_response_time'] %>ms
+      </div>
+    </div>
+  <% end %>
+
+  <div class="metric-card">
+    <div class="metric-label">Total Checks</div>
+    <div class="metric-value">
+      <%= @site_data['total_checks'] %>
+    </div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-label">Last Checked</div>
+    <div class="metric-value" style="font-size: 14px; color: #586069;">
+      <%= time_ago(@site_data['last_checked']) %>
+    </div>
+  </div>
+</div>
+
+<% if @site_data['last_error'] && @site_data['status'] == 'down' %>
+  <div style="background-color: #fff; border-radius: 6px; padding: 20px 30px; margin-bottom: 30px; border-left: 4px solid #dc3545;">
+    <h3 style="color: #dc3545; margin-bottom: 10px;">Current Issue</h3>
+    <p style="color: #586069;"><%= @site_data['last_error'] %></p>
+  </div>
+<% end %>
+
+<div style="background-color: #fff; border-radius: 6px; padding: 30px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+  <h2 class="section-title">90-Day Uptime History</h2>
+
+  <% if @uptime_bars.empty? %>
+    <div class="empty-state">
+      <p>No historical data available yet</p>
+    </div>
+  <% else %>
+    <div class="uptime-bar-container">
+      <% @uptime_bars.each do |bar| %>
+        <% if bar['status'] == 'no_data' %>
+          <div class="uptime-bar-item bar-no-data"
+               title="<%= bar['date'] %>: No data">
+          </div>
+        <% elsif bar['status'] == 'error' %>
+          <div class="uptime-bar-item bar-error"
+               title="<%= bar['date'] %>: <%= bar['uptime'] %>% uptime - <%= bar['down_count'] %> failure(s), <%= bar['up_count'] %> success">
+          </div>
+        <% else %>
+          <div class="uptime-bar-item bar-success"
+               title="<%= bar['date'] %>: 100% uptime - <%= bar['total_checks'] %> check(s)">
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+    <div class="uptime-bar-legend">
+      <div class="legend-item">
+        <span class="legend-color" style="background-color: #28a745;"></span>
+        <span>Operational</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-color" style="background-color: #dc3545;"></span>
+        <span>Downtime</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-color" style="background-color: #e1e4e8;"></span>
+        <span>No Data</span>
+      </div>
+    </div>
+    <div class="uptime-legend">
+      <span>90 days ago</span>
+      <span style="flex-grow: 1; text-align: center;">← Time →</span>
+      <span>Today</span>
+    </div>
+  <% end %>
+</div>
+
+<% if @history.any? %>
+  <div style="background-color: #fff; border-radius: 6px; padding: 30px; margin-top: 30px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+    <h2 class="section-title">Recent Checks (Last 7 Days)</h2>
+    <table style="width: 100%; border-collapse: collapse;">
+      <thead>
+        <tr style="border-bottom: 2px solid #e1e4e8;">
+          <th style="text-align: left; padding: 10px; font-size: 12px; color: #6c757d; text-transform: uppercase;">Timestamp</th>
+          <th style="text-align: left; padding: 10px; font-size: 12px; color: #6c757d; text-transform: uppercase;">Status</th>
+          <th style="text-align: left; padding: 10px; font-size: 12px; color: #6c757d; text-transform: uppercase;">Response Time</th>
+          <th style="text-align: left; padding: 10px; font-size: 12px; color: #6c757d; text-transform: uppercase;">Error</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @history.last(50).reverse.each do |check| %>
+          <tr style="border-bottom: 1px solid #e1e4e8;">
+            <td style="padding: 10px; font-size: 13px;"><%= format_timestamp(check['timestamp']) %></td>
+            <td style="padding: 10px;">
+              <span class="status-badge status-<%= check['status'] %>">
+                <%= check['status'] %>
+              </span>
+            </td>
+            <td style="padding: 10px; font-size: 13px;">
+              <%= check['response_time'] ? "#{check['response_time']}ms" : 'N/A' %>
+            </td>
+            <td style="padding: 10px; font-size: 13px; color: #586069;">
+              <%= check['error'] || '-' %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% end %>
